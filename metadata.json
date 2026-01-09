@@ -1,0 +1,5 @@
+{
+  "name": "Campeonato Inova de Palpites",
+  "description": "Uma plataforma completa para criar e participar de campeonatos de palpites de futebol. Administradores podem gerenciar torneios, rodadas e resultados, enquanto os usuários fazem seus palpites, competem em tabelas de classificação e desbloqueiam conquistas.",
+  "requestFramePermissions": []
+}
