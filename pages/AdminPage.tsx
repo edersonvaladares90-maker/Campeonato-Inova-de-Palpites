@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '../hooks/useData';
 import { useAuth } from '../hooks/useAuth';
@@ -150,6 +149,7 @@ const RoundEditor: React.FC<RoundEditorProps> = ({ round, tournamentId, onAddGam
     const [isExpanded, setIsExpanded] = useState(false);
     // FIX: Explicitly setting the type for useState to string, to avoid issues with type inference.
     const [teamA, setTeamA] = useState<string>('');
+    // FIX: Added explicit <string> type to useState for teamB to match teamA and fix type inference issues.
     const [teamB, setTeamB] = useState<string>('');
     const [editingResults, setEditingResults] = useState<{ [gameId: string]: { scoreA: string, scoreB: string } }>({});
     const [scorers, setScorers] = useState<{ [playerId: string]: string }>({});
