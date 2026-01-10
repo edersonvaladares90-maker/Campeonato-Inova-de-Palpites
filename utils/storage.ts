@@ -12,7 +12,7 @@ interface AppDatabase {
 const DB_KEY = 'inovaPalpitesDB';
 
 const INITIAL_USERS: User[] = [
-  { id: 'user-4', firstName: 'Ederson', lastName: 'Valadares', teamName: 'Master Admin', email: 'edrslv@yahoo.com', phone: '111222333', passwordHash: 'ederson123', isAdmin: true, avatarUrl: 'https://picsum.photos/seed/ederson/200' },
+  { id: 'user-4', firstName: 'Ederson', lastName: 'Silva', teamName: 'Ederson', email: 'edrslv@yahoo.com', phone: '31992628932', passwordHash: 'ederson123', isAdmin: true, avatarUrl: 'https://picsum.photos/seed/ederson/200' },
 ];
 
 const INITIAL_PLAYERS: Player[] = [];

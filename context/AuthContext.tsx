@@ -53,9 +53,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const db = loadDB();
     const userIndex = db.users.findIndex(u => u.id === updatedUser.id);
     if (userIndex !== -1) {
-        db.users[userIndex] = updatedUser;
+        const originalUser = db.users[userIndex];
+        // Preserve critical data from the original record to prevent it from being changed via profile edit.
+        const finalUser = {
+            ...updatedUser,
+            isAdmin: originalUser.isAdmin,
+            email: originalUser.email,
+        };
+        db.users[userIndex] = finalUser;
         saveDB(db);
-        setUser(updatedUser);
+        setUser(finalUser);
     }
   };
 
