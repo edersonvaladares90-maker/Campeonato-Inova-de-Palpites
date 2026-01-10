@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { User } from '../types';
 import { SaveIcon, EditIcon, UserIcon, MailIcon, PhoneIcon, UsersIcon, ShieldIcon } from '../components/icons';
@@ -29,6 +29,10 @@ const ProfilePage: React.FC<{ navigate: (page: 'admin') => void }> = ({ navigate
     const { achievements } = useData();
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState<User | null>(user);
+
+    useEffect(() => {
+        setFormData(user);
+    }, [user]);
 
     const userAchievements = achievements.filter(a => a.userId === user?.id);
 
@@ -67,21 +71,21 @@ const ProfilePage: React.FC<{ navigate: (page: 'admin') => void }> = ({ navigate
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Primeiro Nome</label>
                                     <div className="relative">
                                         <UserIcon className="absolute top-3 left-3 w-5 h-5 text-gray-400"/>
-                                        <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} disabled={!isEditing} className="mt-1 block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 disabled:bg-gray-200 dark:disabled:bg-gray-700/50" />
+                                        <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} disabled={!isEditing} className="mt-1 block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 disabled:bg-gray-200 dark:disabled:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                     </div>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Último Nome</label>
                                     <div className="relative">
                                         <UserIcon className="absolute top-3 left-3 w-5 h-5 text-gray-400"/>
-                                        <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} disabled={!isEditing} className="mt-1 block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 disabled:bg-gray-200 dark:disabled:bg-gray-700/50" />
+                                        <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} disabled={!isEditing} className="mt-1 block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 disabled:bg-gray-200 dark:disabled:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                     </div>
                                 </div>
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome do Time</label>
                                     <div className="relative">
                                         <UsersIcon className="absolute top-3 left-3 w-5 h-5 text-gray-400"/>
-                                        <input type="text" name="teamName" value={formData.teamName} onChange={handleInputChange} disabled={!isEditing} className="mt-1 block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 disabled:bg-gray-200 dark:disabled:bg-gray-700/50" />
+                                        <input type="text" name="teamName" value={formData.teamName} onChange={handleInputChange} disabled={!isEditing} className="mt-1 block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 disabled:bg-gray-200 dark:disabled:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                     </div>
                                 </div>
                                 <div>
@@ -95,7 +99,7 @@ const ProfilePage: React.FC<{ navigate: (page: 'admin') => void }> = ({ navigate
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Telefone</label>
                                      <div className="relative">
                                         <PhoneIcon className="absolute top-3 left-3 w-5 h-5 text-gray-400"/>
-                                        <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} disabled={!isEditing} className="mt-1 block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 disabled:bg-gray-200 dark:disabled:bg-gray-700/50" />
+                                        <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} disabled={!isEditing} className="mt-1 block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 disabled:bg-gray-200 dark:disabled:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                     </div>
                                 </div>
                             </div>
@@ -113,7 +117,7 @@ const ProfilePage: React.FC<{ navigate: (page: 'admin') => void }> = ({ navigate
                         </form>
                     </div>
                     
-                    {user.email === 'ederson.valadares.90@gmail.com' && (
+                    {user.email === 'edrslv@yahoo.com' && (
                         <div className="mt-8 pt-6 border-t dark:border-gray-700">
                             <h2 className="text-xl font-bold mb-4 text-blue-600 dark:text-blue-400">Painel de Administrador</h2>
                             <p className="text-gray-600 dark:text-gray-400 mb-4">

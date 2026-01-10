@@ -15,7 +15,7 @@ const INITIAL_USERS: User[] = [
   { id: 'user-1', firstName: 'Admin', lastName: 'User', teamName: 'Inova Corp', email: 'admin@inova.com', phone: '123456789', passwordHash: 'admin123', isAdmin: true, avatarUrl: 'https://picsum.photos/seed/admin/200' },
   { id: 'user-2', firstName: 'Alice', lastName: 'Silva', teamName: 'Real Alice', email: 'alice@email.com', phone: '987654321', passwordHash: 'alice123', isAdmin: false, avatarUrl: 'https://picsum.photos/seed/alice/200' },
   { id: 'user-3', firstName: 'Bob', lastName: 'Souza', teamName: 'Atlético Bobense', email: 'bob@email.com', phone: '555555555', passwordHash: 'bob123', isAdmin: false, avatarUrl: 'https://picsum.photos/seed/bob/200' },
-  { id: 'user-4', firstName: 'Ederson', lastName: 'Valadares', teamName: 'Master Admin', email: 'ederson.valadares.90@gmail.com', phone: '111222333', passwordHash: 'ederson123', isAdmin: true, avatarUrl: 'https://picsum.photos/seed/ederson/200' },
+  { id: 'user-4', firstName: 'Ederson', lastName: 'Valadares', teamName: 'Master Admin', email: 'edrslv@yahoo.com', phone: '111222333', passwordHash: 'ederson123', isAdmin: true, avatarUrl: 'https://picsum.photos/seed/ederson/200' },
 ];
 
 const INITIAL_PLAYERS: Player[] = [
