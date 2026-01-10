@@ -47,6 +47,7 @@ export interface Round {
 export interface Tournament {
   id: string;
   name: string;
+  imageUrl?: string;
   rounds: Round[];
 }
 

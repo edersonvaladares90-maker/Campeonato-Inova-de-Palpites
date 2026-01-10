@@ -1,19 +1,21 @@
+
 import React, { useState } from 'react';
 import { useData } from '../hooks/useData';
 import { useAuth } from '../hooks/useAuth';
 import { Tournament, Game, Round, Player } from '../types';
-import { PlusIcon, TrashIcon, EditIcon, SaveIcon, ChevronDownIcon, ChevronUpIcon } from '../components/icons';
+import { PlusIcon, TrashIcon, EditIcon, SaveIcon, ChevronDownIcon, ChevronUpIcon, ImageIcon } from '../components/icons';
 
 const AdminPage: React.FC<{ navigate: Function }> = () => {
     const { user } = useAuth();
-    const { tournaments, addTournament, deleteTournament, addRound, addGameToRound, updateRoundResults, players } = useData();
+    const { tournaments, addTournament, updateTournament, deleteTournament, addRound, addGameToRound, updateRoundResults, players } = useData();
     const [newTournamentName, setNewTournamentName] = useState('');
-    const [selectedTournamentId, setSelectedTournamentId] = useState<string | null>(null);
+    const [newTournamentImageUrl, setNewTournamentImageUrl] = useState('');
 
     const handleAddTournament = () => {
         if (newTournamentName.trim()) {
-            addTournament(newTournamentName.trim());
+            addTournament(newTournamentName.trim(), newTournamentImageUrl.trim());
             setNewTournamentName('');
+            setNewTournamentImageUrl('');
         }
     };
 
@@ -26,19 +28,26 @@ const AdminPage: React.FC<{ navigate: Function }> = () => {
             <h1 className="text-3xl font-bold mb-6">Painel do Administrador</h1>
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
-                <h2 className="text-xl font-bold mb-4">Gerenciar Torneios</h2>
-                <div className="flex space-x-2">
+                <h2 className="text-xl font-bold mb-4">Criar Novo Torneio</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
                         type="text"
                         value={newTournamentName}
                         onChange={(e) => setNewTournamentName(e.target.value)}
                         placeholder="Nome do novo torneio"
-                        className="flex-grow p-2 border dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"
+                        className="w-full p-2 border dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"
                     />
-                    <button onClick={handleAddTournament} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center">
-                        <PlusIcon className="w-5 h-5 mr-1" /> Adicionar
-                    </button>
+                    <input
+                        type="text"
+                        value={newTournamentImageUrl}
+                        onChange={(e) => setNewTournamentImageUrl(e.target.value)}
+                        placeholder="URL da Imagem (opcional)"
+                        className="w-full p-2 border dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"
+                    />
                 </div>
+                <button onClick={handleAddTournament} className="mt-4 w-full md:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center">
+                    <PlusIcon className="w-5 h-5 mr-1" /> Adicionar Torneio
+                </button>
             </div>
 
             <div className="space-y-4">
@@ -47,6 +56,7 @@ const AdminPage: React.FC<{ navigate: Function }> = () => {
                         key={t.id} 
                         tournament={t} 
                         onDelete={deleteTournament} 
+                        onUpdate={updateTournament}
                         onAddRound={addRound}
                         onAddGame={addGameToRound}
                         onUpdateResults={updateRoundResults}
@@ -61,16 +71,19 @@ const AdminPage: React.FC<{ navigate: Function }> = () => {
 interface TournamentEditorProps {
     tournament: Tournament;
     onDelete: (id: string) => void;
+    onUpdate: (tournamentId: string, data: { name: string; imageUrl: string }) => void;
     onAddRound: (tournamentId: string, name: string, deadline: number) => void;
     onAddGame: (tournamentId: string, roundId: string, game: Omit<Game, 'id'>) => void;
     onUpdateResults: (tournamentId: string, roundId: string, games: Game[], scorers: { [playerId: string]: number }) => void;
     players: Player[];
 }
 
-const TournamentEditor: React.FC<TournamentEditorProps> = ({ tournament, onDelete, onAddRound, onAddGame, onUpdateResults, players }) => {
+const TournamentEditor: React.FC<TournamentEditorProps> = ({ tournament, onDelete, onUpdate, onAddRound, onAddGame, onUpdateResults, players }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [newRoundName, setNewRoundName] = useState('');
     const [newRoundDeadline, setNewRoundDeadline] = useState('');
+    const [editingName, setEditingName] = useState(tournament.name);
+    const [editingImageUrl, setEditingImageUrl] = useState(tournament.imageUrl || '');
 
     const handleAddRound = () => {
         if(newRoundName.trim() && newRoundDeadline) {
@@ -79,6 +92,11 @@ const TournamentEditor: React.FC<TournamentEditorProps> = ({ tournament, onDelet
             setNewRoundName('');
             setNewRoundDeadline('');
         }
+    }
+
+    const handleUpdateTournament = () => {
+        onUpdate(tournament.id, { name: editingName, imageUrl: editingImageUrl });
+        alert("Torneio atualizado!");
     }
 
     return (
@@ -91,15 +109,25 @@ const TournamentEditor: React.FC<TournamentEditorProps> = ({ tournament, onDelet
                 </div>
             </div>
             {isOpen && (
-                <div className="p-4 border-t dark:border-gray-700">
-                    <div className="mb-4 p-4 border dark:border-gray-600 rounded-md">
+                <div className="p-4 border-t dark:border-gray-700 space-y-4">
+                    <div>
+                        <h4 className="font-bold mb-2">Editar Torneio</h4>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                           <input type="text" value={editingName} onChange={e => setEditingName(e.target.value)} placeholder="Nome do Torneio" className="p-2 border dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"/>
+                           <input type="text" value={editingImageUrl} onChange={e => setEditingImageUrl(e.target.value)} placeholder="URL da Imagem" className="p-2 border dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"/>
+                        </div>
+                        <button onClick={handleUpdateTournament} className="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 flex items-center justify-center text-sm"><SaveIcon className="w-4 h-4 mr-1" /> Salvar Alterações</button>
+                    </div>
+
+                    <div className="p-4 border-t dark:border-gray-600">
                         <h4 className="font-bold mb-2">Adicionar Nova Rodada</h4>
                         <div className="grid md:grid-cols-3 gap-2">
                            <input type="text" value={newRoundName} onChange={e => setNewRoundName(e.target.value)} placeholder="Nome da Rodada" className="p-2 border dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"/>
                            <input type="datetime-local" value={newRoundDeadline} onChange={e => setNewRoundDeadline(e.target.value)} className="p-2 border dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"/>
-                           <button onClick={handleAddRound} className="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 flex items-center justify-center"><PlusIcon className="w-5 h-5 mr-1" /> Adicionar Rodada</button>
+                           <button onClick={handleAddRound} className="bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center"><PlusIcon className="w-5 h-5 mr-1" /> Adicionar Rodada</button>
                         </div>
                     </div>
+
                     {tournament.rounds.map(round => (
                         <RoundEditor key={round.id} round={round} tournamentId={tournament.id} onAddGame={onAddGame} onUpdateResults={onUpdateResults} players={players}/>
                     ))}
@@ -120,8 +148,9 @@ interface RoundEditorProps {
 
 const RoundEditor: React.FC<RoundEditorProps> = ({ round, tournamentId, onAddGame, onUpdateResults, players }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const [teamA, setTeamA] = useState('');
-    const [teamB, setTeamB] = useState('');
+    // FIX: Explicitly setting the type for useState to string, to avoid issues with type inference.
+    const [teamA, setTeamA] = useState<string>('');
+    const [teamB, setTeamB] = useState<string>('');
     const [editingResults, setEditingResults] = useState<{ [gameId: string]: { scoreA: string, scoreB: string } }>({});
     const [scorers, setScorers] = useState<{ [playerId: string]: string }>({});
 
@@ -130,10 +159,8 @@ const RoundEditor: React.FC<RoundEditorProps> = ({ round, tournamentId, onAddGam
             onAddGame(tournamentId, round.id, { 
                 teamA: teamA.trim(), 
                 teamB: teamB.trim(), 
-                // FIX: Explicitly cast to string to resolve a type inference issue where the argument was being treated as 'unknown'.
-                teamALogo: `https://picsum.photos/seed/${encodeURIComponent(String(teamA.trim()))}/40`,
-                // FIX: Explicitly cast to string to resolve a type inference issue where the argument was being treated as 'unknown'.
-                teamBLogo: `https://picsum.photos/seed/${encodeURIComponent(String(teamB.trim()))}/40`
+                teamALogo: `https://picsum.photos/seed/${encodeURIComponent(teamA.trim())}/40`,
+                teamBLogo: `https://picsum.photos/seed/${encodeURIComponent(teamB.trim())}/40`
             });
             setTeamA('');
             setTeamB('');
@@ -167,13 +194,13 @@ const RoundEditor: React.FC<RoundEditorProps> = ({ round, tournamentId, onAddGam
 
 
     return (
-        <div className="border dark:border-gray-600 rounded-md p-3 mb-3 bg-gray-50 dark:bg-gray-700/50">
+        <div className="border dark:border-gray-600 rounded-md p-3 bg-gray-50 dark:bg-gray-700/50">
             <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
                 <h4 className="font-semibold">{round.name}</h4>
                 {isExpanded ? <ChevronUpIcon className="w-5 h-5"/> : <ChevronDownIcon className="w-5 h-5"/>}
             </div>
             {isExpanded && (
-                <div className="mt-3">
+                <div className="mt-3 pt-3 border-t dark:border-gray-600">
                     {/* Add Game Form */}
                      <div className="grid md:grid-cols-3 gap-2 mb-4">
                         <input type="text" value={teamA} onChange={e => setTeamA(e.target.value)} placeholder="Time A" className="p-2 border dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"/>

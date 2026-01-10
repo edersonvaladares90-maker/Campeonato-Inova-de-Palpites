@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { User } from '../types';
-import { SaveIcon, EditIcon, UserIcon, MailIcon, PhoneIcon, UsersIcon } from '../components/icons';
+import { SaveIcon, EditIcon, UserIcon, MailIcon, PhoneIcon, UsersIcon, ShieldIcon } from '../components/icons';
 import { Achievement } from '../types';
 import { useData } from '../hooks/useData';
 
@@ -24,7 +24,7 @@ const AchievementIcon: React.FC<{ achievement: Achievement }> = ({ achievement }
 }
 
 
-const ProfilePage: React.FC<{ navigate: Function }> = () => {
+const ProfilePage: React.FC<{ navigate: (page: 'admin') => void }> = ({ navigate }) => {
     const { user, updateUser } = useAuth();
     const { achievements } = useData();
     const [isEditing, setIsEditing] = useState(false);
@@ -112,6 +112,21 @@ const ProfilePage: React.FC<{ navigate: Function }> = () => {
                             </div>
                         </form>
                     </div>
+                    
+                    {user.email === 'ederson.valadares.90@gmail.com' && (
+                        <div className="mt-8 pt-6 border-t dark:border-gray-700">
+                            <h2 className="text-xl font-bold mb-4 text-blue-600 dark:text-blue-400">Painel de Administrador</h2>
+                            <p className="text-gray-600 dark:text-gray-400 mb-4">
+                                Como administrador especial, você tem acesso ao painel de gerenciamento completo de torneios.
+                            </p>
+                            <button
+                                onClick={() => navigate('admin')}
+                                className="w-full flex justify-center items-center px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                            >
+                                <ShieldIcon className="w-5 h-5 mr-2" /> Acessar Gerenciamento de Torneios
+                            </button>
+                        </div>
+                    )}
 
                     <div className="mt-8 pt-6 border-t dark:border-gray-700">
                         <h2 className="text-xl font-bold mb-4">Conquistas</h2>

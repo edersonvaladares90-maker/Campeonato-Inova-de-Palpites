@@ -7,6 +7,7 @@ export const MOCK_USERS: User[] = [
   { id: 'user-1', firstName: 'Admin', lastName: 'User', teamName: 'Inova Corp', email: 'admin@inova.com', phone: '123456789', passwordHash: 'admin123', isAdmin: true, avatarUrl: 'https://picsum.photos/seed/admin/200' },
   { id: 'user-2', firstName: 'Alice', lastName: 'Silva', teamName: 'Real Alice', email: 'alice@email.com', phone: '987654321', passwordHash: 'alice123', isAdmin: false, avatarUrl: 'https://picsum.photos/seed/alice/200' },
   { id: 'user-3', firstName: 'Bob', lastName: 'Souza', teamName: 'Atlético Bobense', email: 'bob@email.com', phone: '555555555', passwordHash: 'bob123', isAdmin: false, avatarUrl: 'https://picsum.photos/seed/bob/200' },
+  { id: 'user-4', firstName: 'Ederson', lastName: 'Valadares', teamName: 'Master Admin', email: 'ederson.valadares.90@gmail.com', phone: '111222333', passwordHash: 'ederson123', isAdmin: true, avatarUrl: 'https://picsum.photos/seed/ederson/200' },
 ];
 
 export const MOCK_PLAYERS: Player[] = [
@@ -20,6 +21,7 @@ const MOCK_TOURNAMENTS: Tournament[] = [
   {
     id: 't-1',
     name: 'Brasileirão 2024',
+    imageUrl: 'https://picsum.photos/seed/brasileirao/400/200',
     rounds: [
       {
         id: 'r-1-1',
@@ -66,7 +68,8 @@ interface DataContextType {
   achievements: UserAchievement[];
   selectedTournament: Tournament | null;
   selectTournament: (tournamentId: string | null) => void;
-  addTournament: (name: string) => void;
+  addTournament: (name: string, imageUrl: string) => void;
+  updateTournament: (tournamentId: string, data: { name: string; imageUrl: string }) => void;
   deleteTournament: (tournamentId: string) => void;
   addRound: (tournamentId: string, roundName: string, deadline: number) => void;
   addGameToRound: (tournamentId: string, roundId: string, game: Omit<Game, 'id'>) => void;
@@ -95,14 +98,19 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setSelectedTournament(tournament);
   };
 
-  const addTournament = (name: string) => {
+  const addTournament = (name: string, imageUrl: string) => {
     const newTournament: Tournament = {
         id: `t-${Date.now()}`,
         name,
+        imageUrl,
         rounds: [],
     };
     setTournaments(prev => [...prev, newTournament]);
   };
+
+  const updateTournament = (tournamentId: string, data: { name: string; imageUrl: string }) => {
+      setTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, ...data } : t));
+  }
 
   const deleteTournament = (tournamentId: string) => {
     setTournaments(prev => prev.filter(t => t.id !== tournamentId));
@@ -249,7 +257,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 
   return (
-    <DataContext.Provider value={{ tournaments, players, bets, users: MOCK_USERS, achievements, selectedTournament, selectTournament, addTournament, deleteTournament, addRound, addGameToRound, submitBets, updateRoundResults, getLeaderboard, getUserBetsForRound }}>
+    <DataContext.Provider value={{ tournaments, players, bets, users: MOCK_USERS, achievements, selectedTournament, selectTournament, addTournament, updateTournament, deleteTournament, addRound, addGameToRound, submitBets, updateRoundResults, getLeaderboard, getUserBetsForRound }}>
       {children}
     </DataContext.Provider>
   );
