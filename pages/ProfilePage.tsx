@@ -28,6 +28,7 @@ const ProfilePage: React.FC<{ navigate: (page: 'admin') => void }> = ({ navigate
     const { user, updateUser } = useAuth();
     const { achievements } = useData();
     const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [formData, setFormData] = useState<User | null>(user);
 
     useEffect(() => {
@@ -43,10 +44,12 @@ const ProfilePage: React.FC<{ navigate: (page: 'admin') => void }> = ({ navigate
         setFormData(prev => prev ? { ...prev, [name]: value } : null);
     };
 
-    const handleSave = (e: React.FormEvent) => {
+    const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         if (formData) {
-            updateUser(formData);
+            setIsSaving(true);
+            await updateUser(formData);
+            setIsSaving(false);
         }
         setIsEditing(false);
     };
@@ -105,8 +108,8 @@ const ProfilePage: React.FC<{ navigate: (page: 'admin') => void }> = ({ navigate
                             </div>
                             <div className="mt-6 flex justify-end">
                                 {isEditing ? (
-                                    <button type="submit" className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                        <SaveIcon className="w-5 h-5 mr-2" /> Salvar
+                                    <button type="submit" disabled={isSaving} className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400">
+                                        <SaveIcon className="w-5 h-5 mr-2" /> {isSaving ? 'Salvando...' : 'Salvar'}
                                     </button>
                                 ) : (
                                     <button type="button" onClick={() => setIsEditing(true)} className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">

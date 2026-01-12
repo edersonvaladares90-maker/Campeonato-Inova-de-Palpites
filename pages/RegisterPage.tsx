@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { UserIcon, MailIcon, LockIcon, PhoneIcon, UsersIcon } from '../components/icons';
@@ -15,15 +14,18 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { register } = useAuth();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        const success = register({ firstName, lastName, teamName, email, phone, passwordHash: password });
+        setIsLoading(true);
+        const success = await register({ firstName, lastName, teamName, email, phone, passwordHash: password });
         if (!success) {
             setError('Este email já está em uso.');
         }
+        setIsLoading(false);
     };
 
     return (
@@ -65,8 +67,8 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
                         <LockIcon className="absolute top-3.5 left-3 w-5 h-5 text-gray-400"/>
                         <input type="password" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700" />
                     </div>
-                    <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
-                        Cadastrar
+                    <button type="submit" disabled={isLoading} className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out disabled:bg-blue-400 disabled:cursor-not-allowed">
+                        {isLoading ? 'Cadastrando...' : 'Cadastrar'}
                     </button>
                 </form>
                  <p className="text-center text-sm text-gray-600 dark:text-gray-400">

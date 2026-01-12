@@ -1,15 +1,15 @@
 
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { User } from '../types';
-import { loadDB, saveDB } from '../utils/storage';
+import { apiLogin, apiRegister, apiUpdateUser } from '../utils/api';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password_hash: string) => boolean;
+  login: (email: string, password_hash: string) => Promise<boolean>;
   logout: () => void;
-  register: (userData: Omit<User, 'id' | 'isAdmin'>) => boolean;
-  updateUser: (updatedUser: User) => void;
-  requestPasswordReset: (email: string) => boolean;
+  register: (userData: Omit<User, 'id' | 'isAdmin'>) => Promise<boolean>;
+  updateUser: (updatedUser: User) => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<boolean>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,9 +17,8 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = (email: string, password_hash: string): boolean => {
-    const db = loadDB();
-    const foundUser = db.users.find(u => u.email === email && u.passwordHash === password_hash);
+  const login = async (email: string, password_hash: string): Promise<boolean> => {
+    const foundUser = await apiLogin(email, password_hash);
     if (foundUser) {
       setUser(foundUser);
       return true;
@@ -31,46 +30,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
   };
   
-  const register = (userData: Omit<User, 'id' | 'isAdmin'>) : boolean => {
-      const db = loadDB();
-      const existingUser = db.users.find(u => u.email === userData.email);
-      if (existingUser) {
-          return false; // User already exists
+  const register = async (userData: Omit<User, 'id' | 'isAdmin'>) : Promise<boolean> => {
+      const newUser = await apiRegister(userData);
+      if (newUser) {
+        setUser(newUser);
+        return true;
       }
-      const newUser: User = {
-          ...userData,
-          id: `user-${Date.now()}`,
-          isAdmin: false,
-          avatarUrl: `https://picsum.photos/seed/${Date.now()}/200`
-      };
-      db.users.push(newUser);
-      saveDB(db);
-      setUser(newUser);
-      return true;
+      return false; // User already exists
   };
 
-  const updateUser = (updatedUser: User) => {
-    const db = loadDB();
-    const userIndex = db.users.findIndex(u => u.id === updatedUser.id);
-    if (userIndex !== -1) {
-        const originalUser = db.users[userIndex];
-        // Preserve critical data from the original record to prevent it from being changed via profile edit.
-        const finalUser = {
-            ...updatedUser,
-            isAdmin: originalUser.isAdmin,
-            email: originalUser.email,
-        };
-        db.users[userIndex] = finalUser;
-        saveDB(db);
+  const updateUser = async (updatedUser: User) => {
+    const finalUser = await apiUpdateUser(updatedUser);
+    if (finalUser) {
         setUser(finalUser);
     }
   };
 
-  const requestPasswordReset = (email: string): boolean => {
-      const db = loadDB();
-      const userExists = db.users.some(u => u.email === email);
+  const requestPasswordReset = async (email: string): Promise<boolean> => {
       // In a real app, this would trigger an email. Here, we just confirm the request was processed.
-      console.log(`Password reset requested for ${email}. User exists: ${userExists}`);
+      console.log(`Password reset requested for ${email}.`);
       return true; // Always return true to prevent email enumeration
   }
 

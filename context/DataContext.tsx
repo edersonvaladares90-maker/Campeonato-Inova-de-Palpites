@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Tournament, User, Player, Bet, Round, Game, Score, UserAchievement } from '../types';
-import { loadDB, saveDB } from '../utils/storage';
+import { apiFetchData, apiAddTournament, apiUpdateTournament, apiDeleteTournament, apiAddRound, apiAddGameToRound, apiSubmitBets, apiUpdateRoundResults } from '../utils/api';
 
 interface DataContextType {
   tournaments: Tournament[];
@@ -10,14 +10,15 @@ interface DataContextType {
   users: User[];
   achievements: UserAchievement[];
   selectedTournament: Tournament | null;
+  loading: boolean;
   selectTournament: (tournamentId: string | null) => void;
-  addTournament: (name: string, imageUrl: string) => void;
-  updateTournament: (tournamentId: string, data: { name: string; imageUrl: string }) => void;
-  deleteTournament: (tournamentId: string) => void;
-  addRound: (tournamentId: string, roundName: string, deadline: number) => void;
-  addGameToRound: (tournamentId: string, roundId: string, game: Omit<Game, 'id'>) => void;
-  submitBets: (tournamentId: string, roundId: string, userBets: Bet[], topScorerId: string, userId: string) => void;
-  updateRoundResults: (tournamentId: string, roundId: string, games: Game[], scorers: { [playerId: string]: number }) => void;
+  addTournament: (name: string, imageUrl: string) => Promise<void>;
+  updateTournament: (tournamentId: string, data: { name: string; imageUrl: string }) => Promise<void>;
+  deleteTournament: (tournamentId: string) => Promise<void>;
+  addRound: (tournamentId: string, roundName: string, deadline: number) => Promise<void>;
+  addGameToRound: (tournamentId: string, roundId: string, game: Omit<Game, 'id'>) => Promise<void>;
+  submitBets: (tournamentId: string, roundId: string, userBets: Bet[], topScorerId: string, userId: string) => Promise<void>;
+  updateRoundResults: (tournamentId: string, roundId: string, games: Game[], scorers: { [playerId: string]: number }) => Promise<void>;
   getLeaderboard: (tournamentId: string) => Score[];
   getUserBetsForRound: (userId: string, round: Round) => { bets: Bet[], topScorer: Player | undefined };
 }
@@ -25,13 +26,25 @@ interface DataContextType {
 export const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [db, setDb] = useState(loadDB());
-  const { users, tournaments, players, bets, achievements } = db;
+  const [db, setDb] = useState({ users: [], tournaments: [], players: [], bets: [], achievements: [] });
+  const [loading, setLoading] = useState(true);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {
-    saveDB(db);
-  }, [db]);
+      const fetchData = async () => {
+          const data = await apiFetchData();
+          setDb(data);
+          setLoading(false);
+      };
+      fetchData();
+  }, []);
+
+  const refreshData = async () => {
+      const data = await apiFetchData();
+      setDb(data);
+  }
+
+  const { users, tournaments, players, bets, achievements } = db;
 
   const selectTournament = (tournamentId: string | null) => {
     if (!tournamentId) {
@@ -42,116 +55,42 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setSelectedTournament(tournament);
   };
 
-  const addTournament = (name: string, imageUrl: string) => {
-    const newTournament: Tournament = {
-        id: `t-${Date.now()}`,
-        name,
-        imageUrl,
-        rounds: [],
-    };
-    setDb(prevDb => ({ ...prevDb, tournaments: [...prevDb.tournaments, newTournament] }));
+  const addTournament = async (name: string, imageUrl: string) => {
+    await apiAddTournament(name, imageUrl);
+    await refreshData();
   };
 
-  const updateTournament = (tournamentId: string, data: { name: string; imageUrl: string }) => {
-      setDb(prevDb => ({
-          ...prevDb,
-          tournaments: prevDb.tournaments.map(t => t.id === tournamentId ? { ...t, ...data } : t)
-      }));
+  const updateTournament = async (tournamentId: string, data: { name: string; imageUrl: string }) => {
+      await apiUpdateTournament(tournamentId, data);
+      await refreshData();
   }
 
-  const deleteTournament = (tournamentId: string) => {
-    setDb(prevDb => ({
-        ...prevDb,
-        tournaments: prevDb.tournaments.filter(t => t.id !== tournamentId)
-    }));
+  const deleteTournament = async (tournamentId: string) => {
+    await apiDeleteTournament(tournamentId);
     if (selectedTournament?.id === tournamentId) {
         setSelectedTournament(null);
     }
+    await refreshData();
   };
 
-  const addRound = (tournamentId: string, roundName: string, deadline: number) => {
-    const newRound: Round = {
-        id: `r-${tournamentId}-${Date.now()}`,
-        name: roundName,
-        deadline,
-        games: [],
-        topScorerBets: {},
-        resultsEntered: false,
-        scorers: {}
-    };
-    setDb(prevDb => ({
-        ...prevDb,
-        tournaments: prevDb.tournaments.map(t => t.id === tournamentId ? {...t, rounds: [...t.rounds, newRound]} : t)
-    }));
+  const addRound = async (tournamentId: string, roundName: string, deadline: number) => {
+    await apiAddRound(tournamentId, roundName, deadline);
+    await refreshData();
   };
 
-  const addGameToRound = (tournamentId: string, roundId: string, gameData: Omit<Game, 'id'>) => {
-      const newGame: Game = { ...gameData, id: `g-${Date.now()}`};
-      setDb(prevDb => ({
-          ...prevDb,
-          tournaments: prevDb.tournaments.map(t => {
-              if (t.id === tournamentId) {
-                  const newRounds = t.rounds.map(r => {
-                      if (r.id === roundId) {
-                          return { ...r, games: [...r.games, newGame] };
-                      }
-                      return r;
-                  });
-                  return { ...t, rounds: newRounds };
-              }
-              return t;
-          })
-      }));
+  const addGameToRound = async (tournamentId: string, roundId: string, gameData: Omit<Game, 'id'>) => {
+      await apiAddGameToRound(tournamentId, roundId, gameData);
+      await refreshData();
   };
   
-  const submitBets = (tournamentId: string, roundId: string, userBets: Bet[], topScorerId: string, userId: string) => {
-    const roundGameIds = db.tournaments.find(t=> t.id === tournamentId)?.rounds.find(r=>r.id===roundId)?.games.map(g=>g.id) || [];
-    const filteredBets = db.bets.filter(b => !(b.userId === userId && roundGameIds.includes(b.gameId)));
-    
-    const newBets = [...filteredBets, ...userBets];
-
-    const newTournaments = db.tournaments.map(t => {
-      if (t.id === tournamentId) {
-        const newRounds = t.rounds.map(r => {
-          if (r.id === roundId) {
-            const newTopScorerBets = { ...r.topScorerBets, [userId]: topScorerId };
-            return { ...r, topScorerBets: newTopScorerBets };
-          }
-          return r;
-        });
-        return { ...t, rounds: newRounds };
-      }
-      return t;
-    });
-
-    const newAchievements = !db.achievements.some(a => a.userId === userId && a.achievement === "Primeiro Palpite")
-        ? [...db.achievements, { userId, achievement: "Primeiro Palpite", date: Date.now() }]
-        : db.achievements;
-    
-    setDb(prevDb => ({
-        ...prevDb,
-        bets: newBets,
-        tournaments: newTournaments,
-        achievements: newAchievements,
-    }));
+  const submitBets = async (tournamentId: string, roundId: string, userBets: Bet[], topScorerId: string, userId: string) => {
+    await apiSubmitBets(tournamentId, roundId, userBets, topScorerId, userId);
+    await refreshData();
   };
 
-  const updateRoundResults = (tournamentId: string, roundId: string, updatedGames: Game[], scorers: { [playerId: string]: number }) => {
-    setDb(prevDb => ({
-        ...prevDb,
-        tournaments: prevDb.tournaments.map(t => {
-            if (t.id === tournamentId) {
-                const newRounds = t.rounds.map(r => {
-                    if (r.id === roundId) {
-                        return { ...r, games: updatedGames, scorers, resultsEntered: true };
-                    }
-                    return r;
-                });
-                return { ...t, rounds: newRounds };
-            }
-            return t;
-        })
-    }));
+  const updateRoundResults = async (tournamentId: string, roundId: string, updatedGames: Game[], scorers: { [playerId: string]: number }) => {
+    await apiUpdateRoundResults(tournamentId, roundId, updatedGames, scorers);
+    await refreshData();
   };
   
   const getUserBetsForRound = (userId: string, round: Round) => {
@@ -221,7 +160,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 
   return (
-    <DataContext.Provider value={{ tournaments, players, bets, users, achievements, selectedTournament, selectTournament, addTournament, updateTournament, deleteTournament, addRound, addGameToRound, submitBets, updateRoundResults, getLeaderboard, getUserBetsForRound }}>
+    <DataContext.Provider value={{ tournaments, players, bets, users, achievements, selectedTournament, loading, selectTournament, addTournament, updateTournament, deleteTournament, addRound, addGameToRound, submitBets, updateRoundResults, getLeaderboard, getUserBetsForRound }}>
       {children}
     </DataContext.Provider>
   );

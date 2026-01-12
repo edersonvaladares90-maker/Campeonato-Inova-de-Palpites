@@ -147,7 +147,7 @@ interface RoundEditorProps {
 
 const RoundEditor: React.FC<RoundEditorProps> = ({ round, tournamentId, onAddGame, onUpdateResults, players }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    // FIX: Explicitly set the type for the teamA and teamB state variables to string to resolve an issue where they were being inferred as 'unknown'.
+    // Fix: Explicitly define state types as string to prevent type inference errors from event handlers.
     const [teamA, setTeamA] = useState<string>('');
     const [teamB, setTeamB] = useState<string>('');
     const [editingResults, setEditingResults] = useState<{ [gameId: string]: { scoreA: string, scoreB: string } }>({});
